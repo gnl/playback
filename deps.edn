@@ -1,0 +1,10 @@
+{:paths   ["src"]
+ :deps    {com.fulcrologic/guardrails {:mvn/version "1.1.13"}
+           com.github.gnl/debux       {:mvn/version "0.8.3-5"}
+           djblue/portal              {:mvn/version "0.42.1"}}
+ :aliases {:pom   {:extra-deps {org.clojure/clojure {:mvn/version "1.10.0"}}}
+           :dev   {:extra-paths ["dev"]
+                   :extra-deps  {io.github.clojure/tools.build {:mvn/version "0.9.4"}}}
+           :build {:paths      ["dev"]
+                   :deps       {io.github.clojure/tools.build {:mvn/version "0.9.4"}}
+                   :ns-default build}}}

@@ -1,0 +1,15 @@
+/diagrams/
+/target
+/classes
+/checkouts
+profiles.clj
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/.prepl-port
+/.cpcache/
+.idea/
+*.iml
+*.swp

@@ -1,0 +1,162 @@
+:linkattrs:
+:sectanchors:
+ifdef::env-github,env-cljdoc[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+image:https://img.shields.io/clojars/v/com.github.gnl/playback.svg[Clojars Project,link=https://clojars.org/com.github.gnl/playback]
+image:https://img.shields.io/badge/License-EPL%202.0-94A5F5.svg[License,link=https://choosealicense.com/licenses/epl-2.0/]
+
+{empty} +
+
+++++
+<p align="center">
+  <img src="doc/images/playback-logo.png?raw=true" alt="playback logo">
+</p>
+++++
+
+{empty} +
+
+
+## Interactive Programming and Print Debugging Reimagined
+
+Playback provides immediate, frictionless access to a function's dataflow and does so out of the box with a minimal number of intuitive, unintrusive, https://fishshell.com/docs/current/design.html#configurability-is-the-root-of-all-evil[zero-config] operations. Two and a half reader tags, to be exact:
+
+```clojure
+#>   ; trace
+#>>  ; trace more
+#><  ; reference traced data
+```
+
+image:doc/images/playback-screenshot.png?raw=true[link="http://www.youtube.com/watch?v=a-4asNWKO1M"]
+
+
+## Quick Start and Walkthrough
+
+. Add image:https://img.shields.io/clojars/v/com.github.gnl/playback.svg[Clojars Project,link=https://clojars.org/com.github.gnl/playback] to your dev (and only dev) dependencies
+. Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up.
+
+- Clojure:
++
+.dev/user.clj
+[source,clojure]
+----
+(ns user
+  (:require [playback.preload]))
+----
+
+- ClojureScript:
++
+.shadow-cljs.edn
+[source,clojure]
+----
+{:builds {:app {:devtools {:preloads [playback.preload]}}}}
+----
++
+See the https://shadow-cljs.github.io/docs/UsersGuide.html#_preloads[Shadow] or https://clojurescript.org/reference/compiler-options#preloads[ClojureScript docs] for more details.
+
++
+If you want to tweak the Portal configuration you can use your own `preload` namespace.
+
+. `+#>+` traces the evaluated output of any code and sends the data to Portal; +
+`+#>>+` traces input or intermediate data as well, depending on the form (let bindings, threading macro steps, function arguments, etc.)
+
+. Traced functions – `+#>(defn+`, `+#>(defmethod+`, `+#>(>defn+` – cache their most recent input and are automatically called with it (= replayed) whenever they're reloaded by your environment's send-to-REPL or recompile-on-save functionality.
++
+This way you can have a function receive some real application data, make changes to the code, eval/reload it and instantly see the updated dataflow, output and possible spec failures as it's auto-replayed and traced with the same input in a tight feedback loop.
++
+CAUTION: Playback does not auto-replay functions whose names end with `!`, so make sure to name your STM-unsafe functions https://guide.clojure.style/#naming-unsafe-functions[as the Gods intended].
++
+TIP: Use additional nested `+#>+` or `+#>>+` tags inside the function to zoom in on the specific code you're interested in, similar to the way you would use `print` statements.
+
+. `+#>< _+` references the currently selected data in the Portal window. You can take any previously traced data, feed it to another function, play around with it in the REPL and `+#>+` the results back to Portal to inspect them.
++
+NOTE: The `_` in `+#>< _+` is just a random placeholder, because Clojure reader tags have to be applied to a form. You can use anything in its place and it will be replaced with the selected Portal data. I like `+#><[]+`.
+
+TIP: Playback works great with Fulcrologic's indispensable https://github.com/fulcrologic/guardrails[Guardrails] (or its now discontinued predecessor https://github.com/gnl/ghostwheel[Ghostwheel]). If you set `{:tap>? true}` in https://github.com/fulcrologic/guardrails#configuration[its configuration], you can see the results of failed spec checks in Portal right inside the traced dataflow (though you'll probably still want to take a look at the REPL or console for the human-readable error message).
+
+### Instant re-render on eval
+
+To get faster feedback and more control over hot-reloading, it's recommended that you disable automatic namespace recompile in your build tool and instead use your editor's send-top-form-to-REPL functionality in combination with Playback's `refresh-on-eval` middleware to manually reload individual functions.
+
+TIP: If you are using Shadow CLJS, you can run `(shadow/watch-set-autobuild! :app false)` before starting the ClojureScript REPL with `(shadow/repl :app)`. If needed, you can still manually trigger a single recompile with `(shadow/watch-compile! :app)`
+
+- Add the middleware:
++
+.shadow-cljs.edn
+[source,clojure]
+----
+{:nrepl {:middleware [playback.nrepl-middleware/refresh-on-eval]
+         :port 9000}}
+----
++
+See the https://shadow-cljs.github.io/docs/UsersGuide.html#nREPL[Shadow] and https://nrepl.org/nrepl/usage/server.html[nREPL] documentation for more details and info on other build tools.
+
+- Initialise it on launch:
++
+.dev/user.clj (<- not .cljs)
+[source,clojure]
+----
+(ns user
+  (:require [playback.nrepl-middleware :as middleware]))
+
+(middleware/init-refresh-on-eval!
+ ;; Refresh/re-render functions to call post-reload
+ ['gnl.clojure-playground.main/mount-root]
+ ;; Namespace prefixes in which eval triggers a refresh
+ ["gnl.clojure-playground"])
+----
+
+WARNING: By default, refresh-on-eval is disabled for traced functions, the idea being that you would usually mess around in the code, repeatedly sending it to the REPL to replay and watch the dataflow in the trace, rinse and repeat until it works and only then would you remove the `+#>+` tag, reload and have the application re-render. You can change this behaviour with `(middleware/set-refresh-on-traced-fn! true)`.
+
+TIP: If you are using a Clojure REPL in a namespace with a refresh-enabled prefix meant for ClojureScript, the middleware will try to call the likely non-existent Clojure equivalent of the re-render function and throw an exception. The simplest solution is to create a noop function with the same name that doesn't do anything.
+
+### On using (unqualified) reader tags
+
+Unqualified, non-namespaced reader tags are reserved for Clojure and their usage by anyone else is https://clojure.org/reference/reader#tagged_literals[frowned upon] by the powers that be, and for a good reason. That being said, I went ahead, did it anyway and – in the time-honoured tradition of everyone who ever thought they knew better while not being in charge – chose to ask for forgiveness rather than permission. This is why:
+
+- Given that Playback is meant to be used continuously as a fundamental part of a Clojurian's dev workflow and is trying to challenge the ubiquity of print debugging, it has to be dead simple. Every extra character that needs typing or reading adds friction.
+- When using macros instead of reader tags one has to add `:require` and `:refer` directives to debug and then remove them again before pushing commits or alternatively leave them in and use noop/stub namespaces and artifacts in the production build (or just leave it all in there and cross one's fingers that no forgotten performance-killing or security-impacting debug statements slip into prod). Way too much complexity, friction and clutter for something that wants to replace and improve upon `print`.
+- `+#>+` tags aren't meant to become a permanent part of the codebase – just like `print` debugging statements – so changing the syntax in the future, should it become necessary, comes at a very limited cost. In the worst-case scenario that Clojure does at some point introduce conflicting reader tags, I'll be forced to grudgingly update Playback and its users will be forced to go through a brief period of mild discomfort as they retrain their muscle memory to the new tags. But while this outcome is not beyond the realm of possibility, it doesn't appear particularly imminent or at all likely.
+- And last but definitely not least – with a bit of imagination `+#>+` kind of looks like a play button, while `+#><+` somewhat resembles a portal, and giving up this kind of perceived semiotic perfection would greatly displease me.
+
+
+## The Road to 1.0
+
+...in no particular order:
+
+- [ ] Add https://github.com/babashka/babashka[babashka] support
+- [ ] Unbreak Node support
+- [ ] Add tests and specs
+- [ ] Add/complete support for re-frame handlers, subscriptions and other common function-like constructs and function registrations to have it all work transparently just like tracing/replaying a regular function, without requiring the user to do any kind of refactoring to accommodate Playback.
+- [ ] Add support for all debux features (transducers, ...)
+- [ ] Add support for https://github.com/hyperfiddle/electric[electric]
+- [ ] Open a PR with debux to merge the added `tap>` support (Playback's currently using a temporary fork)
+- [ ] Think about how to handle the replay of side-effectful STM-unsafe functions without setting things on fire
+
+
+## Contributions and Support
+
+I'm always open to PRs, but please do reach out first if you want to tackle something bigger so we can make sure we're on the same page.
+
+Other than that, I would very much like to be able to spend more time on further explorations of the general hacker-merging-with-machine area, so if you or your company have benefitted professionally from my open-source work or would simply like to support further development and can afford it, you can do so via PayPal for now (GitHub Sponsors coming soon):
+
+https://www.paypal.com/donate/?hosted_button_id=BAMGNYAA7TSJJ[*Become a Champion of the Lisp Arts*]
+
+General inquiries as to my availability for paid work, open source or otherwise, are welcome.
+
+
+## Acknowledgements and Prior Art
+
+First the obligatory disclaimer that Playback stands on the shoulders of giants – those being https://github.com/philoskim/debux[Philos Kim's debux] and https://github.com/djblue/portal[Chris Badahdah's portal] in particular – and mostly just does some dot-connecting and magic-sprinkling on top in order to fuse them into what is hopefully a highly enjoyable interactive development experience, for which, as my small contribution to the never-ending abuse of the REPL acronym, I would like to propose the term RETL, as in Read–Eval–Trace Loop.
+
+The idea to re-render on eval was stolen from https://github.com/mkarp/cljs-nrepl-exercise[Misha Karpenko's nREPL experiments]; https://github.com/spellhouse/clairvoyant[Spellhouse's Clairvoyant] and https://github.com/day8/re-frame-tracer[Day8's re-frame tracer] were the initial inspiration for and the foundation of https://github.com/gnl/ghostwheel#evaluation-tracing-and-program-observability[Ghostwheel's tracing functionality] which was a first shaky step towards what I imagined REPL-based development and debugging should more or less look like. The https://github.com/gnl/ghostwheel#rationale[corresponding section] of the original omnibus project's README is a good summary of the evolving vision that Playback is a part of.
+
+As always, go boldly forth, fellow maker, create freely and be not afraid of a messy road.
+
+{empty} +
+Copyright (c) 2023 George Lipov +
+Licensed under the https://choosealicense.com/licenses/epl-2.0/[Eclipse Public License 2.0]
