@@ -84,7 +84,7 @@ To get faster feedback and more control over hot-reloading, it's recommended tha
 
 TIP: If you are using Shadow CLJS, you can run `(shadow/watch-set-autobuild! :app false)` before starting the ClojureScript REPL with `(shadow/repl :app)`. If needed, you can still manually trigger a single recompile with `(shadow/watch-compile! :app)`
 
-- Add the middleware:
+. Add the middleware:
 +
 .shadow-cljs.edn
 [source,clojure]
@@ -95,7 +95,7 @@ TIP: If you are using Shadow CLJS, you can run `(shadow/watch-set-autobuild! :ap
 +
 See the https://shadow-cljs.github.io/docs/UsersGuide.html#nREPL[Shadow] and https://nrepl.org/nrepl/usage/server.html[nREPL] documentation for more details and info on other build tools.
 
-- Initialise it on launch:
+. Initialise it on launch:
 +
 .dev/user.clj (<- not .cljs)
 [source,clojure]
