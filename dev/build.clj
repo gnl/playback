@@ -17,7 +17,7 @@
             [clojure.tools.build.api :as b]))
 
 
-(def version "0.3.9")
+(def version "0.3.10-SNAPSHOT")
 
 (def lib 'com.github.gnl/playback)
 (def gpg-signing-key "EA4E52DD8F4A7AD2F6D1F1FBE1A18DCD43ECC7C9")
@@ -48,7 +48,7 @@
 (defn- pre-deploy-checks []
   (when-not snapshot?
     (step "Refreshing pom.xml and running pre-deploy checks")
-    (b/process {:command-args ["clj" "-A:pom" "-Spom"]})
+    (b/process {:command-args ["clj" "-A:pom-provided" "-Spom"]})
     (assert (string/blank? (b/git-process {:git-args ["status" "--porcelain"]}))
             "Git working tree is not clean.")
     (let [git-tag (b/git-process {:git-args ["describe" "--tags"]})]
@@ -81,7 +81,7 @@
 (defn pom [_]
   (validate-version)
   (step "Syncing pom.xml template with deps.edn")
-  (b/process {:command-args ["clj" "-A:pom" "-Spom"]})
+  (b/process {:command-args ["clj" "-A:pom-provided" "-Spom"]})
   (done)
   (step "Generating pom.xml from template")
   (b/write-pom {:basis     basis
