@@ -156,6 +156,8 @@ First the obligatory disclaimer that Playback stands on the shoulders of giants 
 
 The idea to re-render on eval was stolen from https://github.com/mkarp/cljs-nrepl-exercise[Misha Karpenko's nREPL experiments]; https://github.com/spellhouse/clairvoyant[Spellhouse's Clairvoyant] and https://github.com/day8/re-frame-tracer[Day8's re-frame tracer] were the initial inspiration for and the foundation of https://github.com/gnl/ghostwheel#evaluation-tracing-and-program-observability[Ghostwheel's tracing functionality] which was a first shaky step towards what I imagined REPL-based development and debugging should more or less look like. The https://github.com/gnl/ghostwheel#rationale[corresponding section] of the original omnibus project's README is a good summary of the evolving vision that Playback is a part of.
 
+https://github.com/jpmonettas/flow-storm-debugger[Juan Monetta's FlowStorm] is another great trace debugger that fits perfectly within this vision, but occupies a different category than Playback – one in which a certain level of complexity is considered a reasonable trade-off for maximum capability. Playback meanwhile aims to extract the highest possible amount of power from the constraints of not exceeding the complexity of `print`. I believe it actually manages to be even simpler than that and is therefore not a trade-off. Depending on the situation, sometimes exchanging simplicity for power is worth it and sometimes it is not. Playback's success is measured by whether you instinctively reach for it instead of `print` in the latter case.
+
 As always, go boldly forth, fellow maker, create freely and be not afraid of a messy road.
 
 {empty} +
