@@ -17,7 +17,7 @@
             [clojure.tools.build.api :as b]))
 
 
-(def version "0.3.10-SNAPSHOT")
+(def version "0.3.10")
 
 (def lib 'com.github.gnl/playback)
 (def gpg-signing-key "EA4E52DD8F4A7AD2F6D1F1FBE1A18DCD43ECC7C9")
