@@ -128,6 +128,7 @@ Unqualified, non-namespaced reader tags are reserved for Clojure and their usage
 
 ...in no particular order:
 
+- [ ] Consider switching to https://github.com/jpmonettas/hansel[jpmonettas/hansel] for the underlying instrumentation/tracing implementation
 - [ ] Add https://github.com/babashka/babashka[babashka] support
 - [ ] Unbreak Node support
 - [ ] Add tests and specs
