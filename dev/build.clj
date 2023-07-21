@@ -46,18 +46,17 @@
 
 
 (defn- pre-deploy-checks []
-  (when-not snapshot?
-    (step "Refreshing pom.xml and running pre-deploy checks")
-    (b/process {:command-args ["clj" "-A:pom-provided" "-Spom"]})
-    (assert (string/blank? (b/git-process {:git-args ["status" "--porcelain"]}))
-            "Git working tree is not clean.")
-    (let [git-tag (b/git-process {:git-args ["describe" "--tags"]})]
-      (assert (not (string/blank? git-tag))
-              "Missing Git version tag.")
-      (assert (re-matches #"^v(\d+\.\d+\.\d+)(-\w+)?$" git-tag)
-              "Invalid Git tag – should be v0.1.1 or v0.1.1-qualifier.")
-      (assert (= (str "v" version) git-tag)
-              "Git tag doesn't match version in build.clj.")))
+  (step "Refreshing pom.xml and running pre-deploy checks")
+  (b/process {:command-args ["clj" "-A:pom-provided" "-Spom"]})
+  (assert (string/blank? (b/git-process {:git-args ["status" "--porcelain"]}))
+          "Git working tree is not clean.")
+  (let [git-tag (b/git-process {:git-args ["describe" "--tags"]})]
+    (assert (not (string/blank? git-tag))
+            "Missing Git version tag.")
+    (assert (re-matches #"^v(\d+\.\d+\.\d+)(-\w+)?$" git-tag)
+            "Invalid Git tag – should be v0.1.1 or v0.1.1-qualifier.")
+    (assert (= (str "v" version) git-tag)
+            "Git tag doesn't match version in build.clj."))
   (done))
 
 
@@ -125,7 +124,7 @@
   (let [sign? (and gpg-signing-key
                    (not (false? sign))
                    (not snapshot?))]
-    (pre-deploy-checks)
+    (when-not snapshot? (pre-deploy-checks))
     (jar nil)
     (step (format "\nDeploying %s jar to Clojars"
                   (if sign? "signed" "unsigned")))
