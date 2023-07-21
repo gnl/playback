@@ -38,7 +38,7 @@ image:doc/images/playback-screenshot.png?raw=true[link="https://www.youtube.com/
 
 . Add image:https://img.shields.io/clojars/v/com.github.gnl/playback.svg[Clojars Project,link=https://clojars.org/com.github.gnl/playback] to your dev (and only dev) dependencies
 +
-WARNING: Playback and Debux require https://github.com/clojure/clojurescript#releases-and-dependency-information[ClojureScript] even in Clojure-only projects – just add it to your dev dependencies.
+WARNING: https://github.com/clojure/clojurescript#releases-and-dependency-information[ClojureScript] is https://github.com/gnl/playback/issues/1[required] even in Clojure-only projects – just add it to your dev dependencies.
 
 . Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up.
 
@@ -146,9 +146,9 @@ Unqualified, non-namespaced reader tags are reserved for Clojure and their usage
 
 I'm always open to PRs, but please do reach out first if you want to tackle something bigger so we can make sure we're on the same page.
 
-Other than that, I would very much like to be able to spend more time on further explorations of the general hacker-merging-with-machine area, so if you or your company have benefitted professionally from my open-source work or would simply like to support further development and can afford it, you can do so via PayPal for now (GitHub Sponsors coming soon):
+Other than that, if you or your company have benefitted professionally from my open-source work or would simply like to support further development and can afford it, your GitHub sponsorship would be much appreciated:
 
-https://www.paypal.com/donate/?hosted_button_id=BAMGNYAA7TSJJ[*Become a Champion of the Lisp Arts*]
+https://github.com/sponsors/gnl[*Become a Champion of the Lisp Arts*]
 
 General inquiries as to my availability for paid work, open source or otherwise, are welcome.
 
@@ -161,7 +161,7 @@ The idea to re-render on eval was stolen from https://github.com/mkarp/cljs-nrep
 
 https://github.com/jpmonettas/flow-storm-debugger[Juan Monetta's FlowStorm] is a fantastic tracing debugger that fits perfectly within this vision, but appears to occupy a different category than Playback – one in which a certain level of (relative) complexity is considered a reasonable trade-off for maximum capability. Playback meanwhile aims to extract the highest possible amount of power from the constraints of not exceeding the complexity of `print`. I believe it actually manages to be even simpler than that and is therefore not a trade-off. Depending on the situation, sometimes exchanging simplicity for power is worth it and sometimes it is not – and Playback's success as a debugging tool is measured by whether you instinctively reach for it instead of `print` in the latter case.
 
-But to look at it as just a type of debugger, tracer or dataflow inspector is to sell it somewhat short. In combination with https://github.com/fulcrologic/guardrails[Guardrails] in particular, it provides instant, precise feedback on the type, content and rendering of real application data repeatedly flowing through a function as it changes iteratively in a tight, low-latency dev loop largely free of many of the common challenges and pitfalls of REPL workflows or dynamically typed languages in general, for that matter. It reduces the extensive amount of mental code compilation and execution that developers commonly perform in their heads, by a significant enough amount that it can be reasonably considered to be a different, and better, paradigm, one that gets much closer to fulfilling the interactive programming promise that classical REPL-based development often fails to deliver on.
+But to look at it as just a type of debugger, tracer or dataflow inspector is to sell it short. In combination with https://github.com/fulcrologic/guardrails[Guardrails] in particular, it provides instant, precise feedback on the type, content and rendering of real application data repeatedly flowing through a function as it changes iteratively in a tight, low-latency dev loop largely free of many of the common challenges and pitfalls of REPL workflows or dynamically typed languages in general, for that matter. It reduces the extensive amount of mental code compilation and execution that developers commonly perform in their heads, by a significant enough amount that it can be reasonably considered to be a different, and better, paradigm, one that gets much closer to fulfilling the interactive programming promise that classical REPL-based development often fails to deliver on.
 
 I believe we have some low-hanging Clojure fruit to pick here and this is the way.
 
