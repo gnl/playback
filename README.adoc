@@ -31,7 +31,7 @@ Playback provides immediate, frictionless access to a function's dataflow and do
 #><  ; reference traced data
 ```
 
-image:doc/images/playback-screenshot.png?raw=true[link="http://www.youtube.com/watch?v=a-4asNWKO1M"]
+image:doc/images/playback-screenshot.png?raw=true[link="https://www.youtube.com/watch?v=sjxPj7DqUSs"]
 
 
 ## Quick Start and Walkthrough
