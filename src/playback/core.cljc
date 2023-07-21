@@ -392,13 +392,15 @@
 
 
 (defn open-portal!
-  []
-  (if (some? **portal-value*)
-    (println "Portal is already open.")
-    (let [portal-instance (portal/open)]
-      #?(:clj  (alter-var-root #'**portal-value* (constantly portal-instance))
-         :cljs (set! **portal-value* portal-instance))
-      portal-instance)))
+  ([]
+   (open-portal! nil))
+  ([portal-config]
+   (if (some? **portal-value*)
+     (println "Portal is already open.")
+     (let [portal-instance (portal/open (merge {} portal-config))]
+       #?(:clj  (alter-var-root #'**portal-value* (constantly portal-instance))
+          :cljs (set! **portal-value* portal-instance))
+       portal-instance))))
 
 
 ;;; DEBUG ;;;
