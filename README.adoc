@@ -27,11 +27,12 @@ Playback provides immediate, frictionless visibility into a function's dataflow;
 
 It does so out of the box with a minimal number of intuitive, unintrusive, https://fishshell.com/docs/current/design.html#configurability-is-the-root-of-all-evil[zero-config] operations. Two and a half reader tags, to be exact:
 
-```clojure
-#>   ; trace
-#>>  ; trace more
+[source]
+----
+#>   ; trace output
+#>>  ; trace output and input/bindings/steps (depending on the form)
 #><  ; reference traced data
-```
+----
 
 image:doc/images/playback-screenshot.png?raw=true[link="https://www.youtube.com/watch?v=sjxPj7DqUSs"]
 
@@ -93,10 +94,10 @@ To get faster feedback and more control over hot-reloading, it's recommended tha
 [source,clojure]
 ----
 {:nrepl {:middleware [playback.nrepl-middleware/refresh-on-eval]
-         :port 9000}}
+         :port       9000}}
 ----
 +
-See the https://shadow-cljs.github.io/docs/UsersGuide.html#nREPL[Shadow] and https://nrepl.org/nrepl/usage/server.html[nREPL] documentation for more details and info on other build tools.
+See the https://shadow-cljs.github.io/docs/UsersGuide.html#nREPL[Shadow documentation] for more details or the https://nrepl.org/nrepl/usage/server.html[nREPL one] for info on other build tools.
 
 . Initialise it on launch:
 +
