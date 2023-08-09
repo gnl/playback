@@ -34,7 +34,7 @@ It does so out of the box with a minimal number of intuitive, unintrusive, https
 #><  ; reference traced data
 ----
 
-image:doc/images/playback-screenshot.png?raw=true[link="https://www.youtube.com/watch?v=sjxPj7DqUSs"]
+image:doc/images/playback-screenshot.png?raw=true[link="https://vimeo.com/853054487"]
 
 
 ## Quick Start and Walkthrough
