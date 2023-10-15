@@ -271,29 +271,11 @@
 
 
 #?(:clj
-   (defmethod trace-form* ::fn-registration
+   (defmethod trace-form* ::loop
      [form trace-level]
-     (wrap-fn-reg form trace-level false)))
-
-
-;; TODO
-#?(:clj
-   (defmethod trace-form* ::defn-traced
-     [form trace-level]
-     form))
-
-;; TODO
-#?(:clj
-   (defmethod trace-form* ::do-not-trace
-     [form trace-level]
-     form))
-
-
-;; TODO
-#?(:clj
-   (defmethod trace-form* ::transducer
-     [form trace-level]
-     form))
+     (case trace-level
+       1 `(dbg ~form :simple)
+       2 `(dbgn ~form))))
 
 
 #?(:clj
