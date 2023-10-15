@@ -8,7 +8,9 @@
 
 (ns playback.nrepl-middleware
   (:require [clojure.string :as string]
-            [clojure.pprint :as pprint]))
+            [clojure.pprint :as pprint]
+            [com.fulcrologic.guardrails.core :refer [>defn ? | =>]]
+            [clojure.spec.alpha :as s]))
 
 
 ;; In my brief experience writing and debugging nREPL middleware, the process
@@ -20,8 +22,9 @@
 (def ^:private ^:dynamic *refreshing-fn-syms* [])
 (def ^:private ^:dynamic *refreshable-ns-prefixes* [])
 
-(defn init-refresh-on-eval!
+(>defn init-refresh-on-eval!
   [refreshing-fn-syms refreshable-ns-prefixes]
+  [(s/coll-of qualified-symbol?) (s/coll-of string?) => any?]
   (alter-var-root #'*refreshing-fn-syms* (constantly refreshing-fn-syms))
   (alter-var-root #'*refreshable-ns-prefixes* (constantly refreshable-ns-prefixes)))
 
