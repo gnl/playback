@@ -80,6 +80,30 @@ TIP: Use additional nested `+#>+` or `+#>>+` tags inside the function to zoom in
 +
 NOTE: The `_` in `+#>< _+` is just a random placeholder, because Clojure reader tags have to be applied to a form. You can use anything in its place and it will be replaced with the selected Portal data. I like `+#><[]+`.
 
+[TIP]
+====
+If you want to use a particular Portal viewer, you can define some helper functions in your `user.clj(s)` like this:
+
+.dev/user.clj(s)
+[source,clojure]
+----
+(ns user)
+
+(defn tree
+  [expr]
+  (with-meta expr {:portal.viewer/default :portal.viewer/tree}))
+
+(defn table
+  [expr]
+  (with-meta expr {:portal.viewer/default :portal.viewer/table}))
+----
+
+You can then wrap any traced expression with `#>> (user/table ...)`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
+====
+
+
+TIP: Playback works great with Fulcrologic's indispensable https://github.com/fulcrologic/guardrails[Guardrails] (or its now discontinued predecessor https://github.com/gnl/ghostwheel[Ghostwheel]). If you set `{:tap>? true}` in https://github.com/fulcrologic/guardrails#configuration[its configuration], you can see the results of failed spec checks in Portal right inside the traced dataflow (though you'll probably still want to take a look at the REPL or console for the human-readable error message). A similar workflow should be possible with https://github.com/metosin/malli/blob/master/docs/function-schemas.md[Malli function schemas] and instrumentation as well.
+
 
 [TIP]
 ====
@@ -108,32 +132,8 @@ If you want to trace/replay your own compatible macros with Playback, you can ex
                           ::playback/fn-reg ['foo.bar/reg-sub 'foo.bar/reg-fx]})
 ----
 
-See `optype->ops` in `playback.core` for a list.
+See `optype\->ops` in `playback.core` for a list.
 ====
-
-[TIP]
-====
-If you want to display some data with a particular Portal viewer, you can define some helper functions in your `user.clj(s) like this:
-
-.dev/user.clj(s)
-[source,clojure]
-----
-(ns user)
-
-(defn tree
-  [expr]
-  (with-meta expr {:portal.viewer/default :portal.viewer/tree}))
-
-(defn table
-  [expr]
-  (with-meta expr {:portal.viewer/default :portal.viewer/table}))
-----
-
-You can then wrap any traced expression with `#>> (user/table ...)`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
-====
-
-
-TIP: Playback works great with Fulcrologic's indispensable https://github.com/fulcrologic/guardrails[Guardrails] (or its now discontinued predecessor https://github.com/gnl/ghostwheel[Ghostwheel]). If you set `{:tap>? true}` in https://github.com/fulcrologic/guardrails#configuration[its configuration], you can see the results of failed spec checks in Portal right inside the traced dataflow (though you'll probably still want to take a look at the REPL or console for the human-readable error message). A similar workflow should be possible with https://github.com/metosin/malli/blob/master/docs/function-schemas.md[Malli function schemas] and instrumentation as well.
 
 ### Instant re-render on eval
 
