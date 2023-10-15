@@ -28,31 +28,43 @@
 (debux/set-tap-output! true)
 
 
-(def ^:no-doc *fn-arg-cache (atom {}))
-(def ^:no-doc ^:dynamic **portal-value* nil)
+(def ^:no-doc !fn-arg-cache (atom {}))
+(def ^:no-doc ^:dynamic !*portal-value* nil)
 
 (def ^:private ^:dynamic *env*)
 (def ^:private ^:dynamic *form*)
 
-(def ^:private form-types->ops
-  {::defn             #{'clojure.core/defn 'cljs.core/defn
-                        'clojure.core/defn- 'cljs.core/defn-}
-   ::>defn            #{'com.fulcrologic.guardrails.core/>defn
-                        'com.fulcrologic.guardrails.core/>defn-}
-   ::defmethod        #{'clojure.core/defmethod 'cljs.core/defmethod}
-   ;; TODO
-   ::fn               #{'clojure.core/fn 'cljs.core/fn}
-   ::re-frame-handler #{'re-frame.core/reg-event-fx 're-frame.core/reg-event-db}
-   ::fn-registration  #{'re-frame.core/reg-sub 're-frame.core/reg-sub-raw}
-   ::transducer       #{'clojure.core/transduce 'cljs.core/transduce}
-   ::defn-traced      #{'day8.re-frame.tracing/defn-traced}
-   ::do-not-trace     #{'day8.re-frame.tracing/fn-traced}})
+#?(:clj
+   (do
+     (def ^:private optype->ops
+       {::defn      #{'clojure.core/defn
+                      'cljs.core/defn
+                      'clojure.core/defn-
+                      'cljs.core/defn-}
+        ::>defn     #{'com.fulcrologic.guardrails.core/>defn
+                      'com.fulcrologic.guardrails.core/>defn-}
+        ::defmethod #{'clojure.core/defmethod
+                      'cljs.core/defmethod}
+        ::fn        #{'clojure.core/fn
+                      'cljs.core/fn}
+        ::fn-reg    #{'re-frame.core/reg-cofx
+                      're-frame.core/reg-event-ctx
+                      're-frame.core/reg-event-db
+                      're-frame.core/reg-event-fx
+                      're-frame.core/reg-fx
+                      're-frame.core/reg-sub
+                      're-frame.core/reg-sub-raw}
+        ::loop      #{'clojure.core/loop
+                      'cljs.core/loop}})
 
-(def ^:private ops->form-types
-  (into {}
-        (for [[form-type syms] form-types->ops
-              sym syms]
-          [sym form-type])))
+     (def ^:private op->optype (invert-optype->ops optype->ops))
+
+     (defonce ^:private !dispatch-type-hierarchy (atom nil))
+     ;; If we just set the hierarchy in the def above, it won't get reset on
+     ;; reload, so we initialise it like this
+     (reset! !dispatch-type-hierarchy (make-hierarchy))
+     (doseq [[op optype] op->optype]
+       (swap! !dispatch-type-hierarchy derive op optype))))
 
 
 ;;; Specs ;;;
@@ -84,20 +96,19 @@
 
 
 #?(:clj
-   ;; REVIEW: refactor as multimethod
    (defn- arg-cache-key
-     [[op sym & [?dispatch-val] :as fn-form] form-type]
-     (case form-type
-       ::defn (get-qualified-sym sym *env*)
-       ::fn-registration [op (keyword (get-qualified-sym sym *env*))]
-       ::defmethod [(get-qualified-sym sym *env*)
+     [[op id & [?dispatch-val] :as _fn-form] optype]
+     (case optype
+       ::defn (get-qualified-sym id *env*)
+       ::fn-reg [op id (get-ns-name *env*)]
+       ::defmethod [(get-qualified-sym id *env*)
                     ?dispatch-val])))
 
 
 #?(:clj
    (defn- traced-op
-     [op form-type]
-     (case form-type
+     [op optype]
+     (case optype
        ::defmethod 'defn
        op)))
 
@@ -105,73 +116,81 @@
 #?(:clj
    (defn- wrapping-op
      [op]
-     (let [form-type (get ops->form-types (resolve-sym *env* op))]
-       (case form-type
-         ::defn-traced 'defn
+     (let [optype (op->optype (resolve-sym *env* op))]
+       (case optype
          ::>defn 'defn
          op))))
 
 
 #?(:clj
    (defn- stripped-fn-head-rest
-     [fn-head-rest form-type]
-     (case form-type
+     [fn-head-rest optype]
+     (case optype
        ::defmethod (drop 1 fn-head-rest)
        fn-head-rest)))
 
 
 #?(:clj
    (defn- generate-capture-defn
-     [fn-form trace-level form-type fn-arg-cache-key]
+     [fn-form trace-level optype fn-arg-cache-key]
      (let [[fn-head fn-tail] (split-fn fn-form)
-           [op fn-name & fn-head-rest] fn-head
-           fn-head-rest   (stripped-fn-head-rest fn-head-rest form-type)
-           traced-fn-name (gensym (str fn-name "__"))]
+           [op tracing-fn-name & fn-head-rest] fn-head
+           fn-head-rest    (stripped-fn-head-rest fn-head-rest optype)
+           renamed-fn-name (unique-playback-sym
+                            *env*
+                            (symbol (str tracing-fn-name "__playback_core__")))
+           renamed-orig-fn `(~(traced-op op optype)
+                             ~(with-meta renamed-fn-name {::playback? true})
+                             ~@fn-head-rest
+                             ~@fn-tail)
+           tracing-fn      `(~(wrapping-op op) ~@(rest fn-head)
+                             [& args#]
+                             (swap! !fn-arg-cache assoc '~fn-arg-cache-key args#)
+                             (-> (str "▷ ︎"
+                                      ~(if (cljs-env? *env*)
+                                         `(.toLocaleTimeString (js/Date.))
+                                         `(.format
+                                           (java.text.SimpleDateFormat. "HH:mm:ss")
+                                           (java.util.Date.)))
+                                      " "
+                                      ~(string/join (repeat 32 "＿")))
+                                 (symbol)
+                                 (log-data))
+                             (log-data (str ~(str "#"
+                                                  (string/join (repeat trace-level ">"))
+                                                  " ")
+                                            '~fn-arg-cache-key)
+                                       true)
+                             (when ~(> trace-level 1)
+                               (log-data :args true)
+                               (log-data (vec args#)))
+                             (let [result# (apply ~renamed-fn-name args#)]
+                               (log-data :ret true)
+                               (log-data result#)
+                               result#))]
        `(do
-          ;; needed for recursion and multi-arity functions
-          (declare ~fn-name)
-          (~(traced-op op form-type) ~traced-fn-name ~@fn-head-rest ~@fn-tail)
-          (let [definition#
-                (~(wrapping-op op) ~@(rest fn-head)
-                 [& args#]
-                 (swap! *fn-arg-cache assoc '~fn-arg-cache-key args#)
-                 (log-data (symbol (str "▷ ︎"
-                                        ~(if (cljs-env? *env*)
-                                           `(.toLocaleTimeString (js/Date.))
-                                           `(.format (java.text.SimpleDateFormat. "HH:mm:ss") (java.util.Date.)))
-                                        " "
-                                        ~(string/join (repeat 32 "＿")))))
-                 (log-data (str ~(str "#"
-                                      (string/join (repeat trace-level ">"))
-                                      " ")
-                                '~fn-arg-cache-key)
-                           true)
-                 (when (> ~trace-level 1)
-                   (log-data :args true)
-                   (log-data (vec args#)))
-                 (let [result# (apply ~traced-fn-name args#)]
-                   (log-data :ret true)
-                   (log-data result#)
-                   result#))]
-            ~(when-not (string/ends-with? (str fn-name) "!")
-               `(when-let [args# (get @*fn-arg-cache '~fn-arg-cache-key)]
-                  (apply ~fn-name args#)))
-            definition#)))))
+          ;; needed for recursive and multi-arity functions, because the tracing
+          ;; fn now has the original fn name they're trying to call
+          (declare ~tracing-fn-name)
+          ~renamed-orig-fn
+          ~tracing-fn
+          ~(when-not (string/ends-with? (str tracing-fn-name) "!")
+             `(when-let [args# (get @!fn-arg-cache '~fn-arg-cache-key)]
+                (apply ~tracing-fn-name args#)))))))
 
 
 #?(:clj
-   (defn- trace-form-dispatch [form trace-level]
+   (defn- trace-form-dispatch [form _trace-level]
      (if-not (seq? form)
-       ::default
+       :default
        (let [op (first form)]
          (if (symbol? op)
-           (let [qualified-sym (resolve-sym *env* op)]
-             (get ops->form-types qualified-sym ::default))
-           ::default)))))
+           (resolve-sym *env* op)
+           :default)))))
 
 
 #?(:clj
-   (defmulti ^:private trace-form* trace-form-dispatch))
+   (defmulti ^:private trace-form* trace-form-dispatch :hierarchy !dispatch-type-hierarchy))
 
 
 #?(:clj
@@ -281,11 +300,18 @@
 
 (defn ^:no-doc trace-o [form] `(trace> ~form))
 (defn ^:no-doc trace-io [form] `(trace>> ~form))
-#_(defn ^:no-doc trace-deep [form] `(trace>>> ~form))
-(defn ^:no-doc get-portal-data [_] `@playback.core/**portal-value*)
+(defn ^:no-doc get-portal-data [_] `@playback.core/!*portal-value*)
 
 
 ;;; Public ;;;
+
+
+#?(:clj
+   (>defn extend-optypes
+     [optype->ops]
+     [(s/map-of ::optype (s/coll-of qualified-symbol?)) => any?]
+     (doseq [[op optype] (invert-optype->ops optype->ops)]
+       (swap! !dispatch-type-hierarchy derive op optype))))
 
 
 (defn portal-tap
@@ -301,15 +327,17 @@
         (portal/submit result)))))
 
 
-(defn open-portal!
+(>defn open-portal!
   ([]
+   [=> any?]
    (open-portal! nil))
   ([portal-config]
-   (if (some? **portal-value*)
-     (println "Portal is already open.")
+   [(? (s/map-of keyword? any?)) => any?]
+   (if (some? !*portal-value*)
+     (println "Looks like Portal is already open.")
      (let [portal-instance (portal/open (merge {} portal-config))]
-       #?(:clj  (alter-var-root #'**portal-value* (constantly portal-instance))
-          :cljs (set! **portal-value* portal-instance))
+       #?(:clj  (alter-var-root #'!*portal-value* (constantly portal-instance))
+          :cljs (set! !*portal-value* portal-instance))
        portal-instance))))
 
 
