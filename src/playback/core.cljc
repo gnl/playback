@@ -8,13 +8,17 @@
 
 (ns playback.core
   #?(:cljs (:require-macros playback.core))
-  (:require [clojure.spec.alpha :as s]
-            [clojure.string :as string]
-            #?@(:clj  [[cljs.analyzer.api :as ana]
-                       [debux.core :as debux :refer [dbg dbgn]]
-                       [portal.api :as portal]]
-                :cljs [[debux.cs.core :as debux :refer-macros [dbg dbgn]]
-                       [portal.web :as portal]])))
+  (:require
+   [clojure.spec.alpha :as s]
+   [clojure.string :as string]
+   [com.fulcrologic.guardrails.core :refer [>defn ? | =>]]
+   [playback.utils :refer [#?@(:clj [resolve-sym get-qualified-sym get-ns-name
+                                     cljs-env? invert-optype->ops unique-playback-sym])
+                           log-data format-portal-label]]
+   #?@(:clj  [[debux.core :as debux :refer [dbg dbgn]]
+              [portal.api :as portal]]
+       :cljs [[debux.cs.core :as debux :refer-macros [dbg dbgn]]
+              [portal.web :as portal]])))
 
 
 ;;; Vars and Init ;;;
@@ -64,102 +68,8 @@
                  :opt-un [::info])
          #(<= (count %) 4)))
 
-
-;;; Utils ;;;
-
-
-(defn- prepend-indent
-  [indent-level]
-  ;; Alternative symbols: #_"⤴ｏ｜⬆ ～￣＿"
-  (-> (repeat indent-level "⬆")
-      string/join
-      (str " ")))
-
-
-(defn- format-portal-label
-  ([label]
-   (format-portal-label label 1))
-  ([label indent-level]
-   (-> (prepend-indent indent-level)
-       (str label)
-       symbol)))
-
-
-(defn ^:no-doc log-data
-  ([data]
-   (log-data data false))
-  ([data label?]
-   (println data)
-   (flush)
-   (if label?
-     (tap> (format-portal-label data))
-     (tap> data))))
-
-
-#?(:clj
-   (defn- cljs-env? [env] (boolean (:ns env))))
-
-
-#?(:clj
-   (defn- get-ns-meta [env]
-     (if (cljs-env? env)
-       (or (meta *ns*) (some-> env :ns :meta))
-       (meta *ns*))))
-
-
-#?(:clj
-   (defn- get-ns-name [env]
-     (if (cljs-env? env)
-       (or (.-name *ns*) (some-> env :ns :name))
-       (.-name *ns*))))
-
-
-#?(:clj
-   (defn- get-qualified-sym [fn-name env]
-     (symbol (str (get-ns-name env)) (name fn-name))))
-
-
-#?(:clj
-   (defn- get-quoted-qualified-sym [fn-name env]
-     `(quote ~(get-qualified-sym fn-name env))))
-
-
-#?(:clj
-   (defn- resolve-sym-clj* [env sym]
-     (if-let [sym-var (resolve sym)]
-       (if (class? sym-var)
-         sym
-         (symbol sym-var)
-         #_(let [m    (meta sym-var)
-                 ns   (str (ns-name (:ns m)))
-                 name (str (:name m))]
-             (symbol ns name)))
-       sym)))
-
-
-#?(:clj
-   ;; Code gratefully borrowed from philoskim/debux
-   (defn- resolve-sym-cljs* [env sym]
-     (if-let [ast-node (ana/resolve env sym)]
-       ;; normal symbol
-       (if (:local ast-node)
-         sym
-         (let [[ns name] (string/split (str (:name ast-node)) #"/")]
-           ;; The special symbol `.` must be handled in the following special symbol part.
-           ;; However, the special symbol `.` returns meta {:name / :ns nil}, which may be a bug.
-           (if (nil? ns)
-             sym
-             (symbol ns name))))
-       ;; special symbols except for `.`
-       sym)))
-
-
-#?(:clj
-   (defn- resolve-sym
-     [env sym]
-     (if (cljs-env? env)
-       (resolve-sym-cljs* env sym)
-       (resolve-sym-clj* env sym))))
+(s/def ::optype
+  #{::defn ::>defn ::defmethod ::fn ::fn-reg ::loop})
 
 
 ;;; Tracing Implementation ;;;
@@ -406,11 +316,14 @@
 ;;; DEBUG ;;;
 
 
-(defmacro ^:no-doc test-resolve-sym
-  [sym]
-  `(println (quote ~(resolve-sym &env sym))))
+#_(defmacro ^:no-doc test-resolve-sym
+    [sym]
+    `(tap> (quote ~(resolve-sym &env sym))))
 
+#_(defmacro ^:no-doc test-resolve-var
+    [sym]
+    `(tap> (quote ~(resolve-var &env sym))))
 
-(defmacro ^:no-doc print-env
-  []
-  `(def ~'debug-environment (quote ~&env)))
+#_(defmacro ^:no-doc print-env
+    []
+    `(tap> (quote ~&env)))
