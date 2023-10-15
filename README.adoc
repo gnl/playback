@@ -43,7 +43,7 @@ image:doc/images/playback-screenshot.png?raw=true[link="https://vimeo.com/853054
 
 . Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up.
 
-- Clojure:
+- Clojure and Babashka:
 +
 .dev/user.clj
 [source,clojure]
