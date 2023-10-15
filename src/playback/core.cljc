@@ -279,12 +279,11 @@
 
 
 #?(:clj
-   (defmethod trace-form* ::default
+   (defmethod trace-form* :default
      [form trace-level]
      (case trace-level
        1 `(dbg ~form :simple)
-       2 `(dbg ~form)
-       3 `(dbgn ~form))))
+       2 `(dbg ~form))))
 
 
 ;;; Data Reader Functions and Macros ;;;
@@ -300,13 +299,6 @@
   [form]
   (binding [*env* &env]
     (trace-form* form 2)))
-
-
-#_(defmacro ^:no-doc trace>>>
-    [form]
-    (binding [*env* &env
-              #_*form* #_&form]
-      (trace-form* form 3)))
 
 
 (defn ^:no-doc trace-o [form] `(trace> ~form))
