@@ -243,29 +243,31 @@
 
 #?(:clj
    (defn- wrap-fn-reg
-     [form trace-level rf-handler?]
+     [form trace-level]
      (let [[op id :as reg-head] (butlast form)
-           handler-fn       (last form)
-           [_ handler-fn-tail] (split-fn handler-fn)
-           ;; FIXME: This won't cache correctly due to the ever-changing gensym
-           ;; Pass explicit arg-cache-key to generate-trace-defn and create from handler ID
-           fn-name          (gensym (str (name id) "_"))
-           fn-arg-cache-key (arg-cache-key form ::fn-registration)
-           rf10x?           (and rf-handler? (= trace-level 3))]
-       `(do
-          ~(generate-capture-defn `(~(if rf10x? 'day8.re-frame.tracing/defn-traced 'defn)
-                                    ~fn-name
-                                    ~@handler-fn-tail)
-                                  trace-level
-                                  ::defn
-                                  fn-arg-cache-key)
-          (~@reg-head ~fn-name)))))
+           handler-fn (last form)]
+       (if-not (and (seq? handler-fn)
+                    (#{'fn 'fn*} (first handler-fn)))
+         form                           ; anon-fn is not defined inline
+         (let [[_ handler-fn-tail] (split-fn handler-fn)
+               fn-name          (unique-playback-sym
+                                 *env*
+                                 (symbol (str (name id) "__" op "__playback_core__")))
+               fn-arg-cache-key (arg-cache-key form ::fn-reg)]
+           `(do
+              ~(generate-capture-defn `(~'defn
+                                        ~(with-meta fn-name {::playback? true})
+                                        ~@handler-fn-tail)
+                                      trace-level
+                                      ::defn
+                                      fn-arg-cache-key)
+              (~@reg-head ~fn-name)))))))
 
 
 #?(:clj
-   (defmethod trace-form* ::re-frame-handler
+   (defmethod trace-form* ::fn-reg
      [form trace-level]
-     (wrap-fn-reg form trace-level true)))
+     (wrap-fn-reg form trace-level)))
 
 
 #?(:clj
