@@ -1,7 +1,7 @@
 {:lib         com.github.gnl/playback
- :version     "0.5.0"
+ :version     "0.5.1-SNAPSHOT"
  :scm         {:url "https://github.com/gnl/playback"}
- :pom-data    [[:description "Dead simple tracing of Clojure(-Script) forms to tap> and Portal with automatic last-input function replay on eval, instant re-render and effortless extraction of traced data"]
+ :pom-data    [[:description "Dead simple dataflow tracing to tap> and Portal with automatic last-input function replay on eval, instant re-render and effortless extraction of traced data"]
                [:url "https://github.com/gnl/playback"]
                [:distributionManagement
                 [:repository
