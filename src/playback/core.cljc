@@ -215,6 +215,33 @@
 
 
 #?(:clj
+   (defn- generate-fn-trace-wrap
+     [fn-form trace-level]
+     (let [[fn-head _fn-tail] (split-fn fn-form)]
+       `(~@fn-head
+         [& args#]
+         (log-data (str ~(str "#"
+                              (string/join (repeat trace-level ">"))
+                              " ")
+                        '~fn-form)
+                   true
+                   2)
+         (when ~(> trace-level 1)
+           (log-data :args true 2)
+           (log-data (vec args#)))
+         (let [result# (apply ~fn-form args#)]
+           (log-data :ret true 2)
+           (log-data result#)
+           result#)))))
+
+
+#?(:clj
+   (defmethod trace-form* ::fn
+     [form trace-level]
+     (generate-fn-trace-wrap form trace-level)))
+
+
+#?(:clj
    (defn- wrap-fn-reg
      [form trace-level rf-handler?]
      (let [[op id :as reg-head] (butlast form)
