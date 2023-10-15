@@ -16,7 +16,8 @@
 ;; In my brief experience writing and debugging nREPL middleware, the process
 ;; was obscure and fragile in the extreme, including sporadic and seemingly
 ;; non-deterministic failures on superficially innocuous code changes like
-;; trying to set the correct middleware description. Thread with caution.
+;; trying to set the correct middleware description. Unclear if any of that was
+;; related to Shadow CLJS. Tread with caution.
 
 
 (def ^:private ^:dynamic *refreshing-fn-syms* [])
