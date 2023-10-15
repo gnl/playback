@@ -1,0 +1,24 @@
+
+## 0.5.0
+
+### Added
+
+- Babashka support!
+- Tracing and replay of re-frame handlers and subscriptions, as well as other similar function registration operations
+- Tracing of anonymous functions
+- Tracing of loop/recur blocks
+- Ability to extend Playback's optypes in order to trace/replay similar custom macros
+
+### Fixed
+
+- A new `defn` was being created on every replay due to the usage of `gensym`, thus increasingly polluting the namespace until the next reload. Function generation now uses a hardcoded suffix with extra-paranoid checks to eliminate the very minimal chance of overwriting an existing var (if you happen to be naming your functions `some-fn\__playback_core__`, Playback will let you know.)
+
+### Improved
+
+- Removed dependency on ClojureScript in Clojure-only projects due to the possibility of dependency conflicts (h/t @Cyrik)
+- Extracted build/deployment code into https://github.com/gnl/build.simple[gnl/build.simple]
+- Added spec validation for the minimal API
+- Cleaned up a lot of messy, late-night, "how is this even working" kinda code
+
+
+## 0.3.10
