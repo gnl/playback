@@ -1,0 +1,14 @@
+{:lib         com.github.gnl/playback
+ :version     "0.5.0-SNAPSHOT"
+ :scm         {:url "https://github.com/gnl/playback"}
+ :pom-data    [[:description "Dead simple tracing of Clojure(-Script) forms to tap> and Portal with automatic last-input function replay on eval, instant re-render and effortless extraction of traced data"]
+               [:url "https://github.com/gnl/playback"]
+               [:distributionManagement
+                [:repository
+                 [:id "clojars"]
+                 [:url "https://clojars.org/repo"]]]
+               [:licenses [:license
+                           [:name "Eclipse Public License 2.0"]
+                           [:url "https://opensource.org/license/epl-2.0/"]]]]
+ :aliases     [:pom]
+ :signing-key "EA4E52DD8F4A7AD2F6D1F1FBE1A18DCD43ECC7C9"}
