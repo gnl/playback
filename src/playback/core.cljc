@@ -90,8 +90,8 @@
 #?(:clj
    (defn- split-fn
      [fn-form]
-     (split-with (every-pred (complement vector?)           ; parameters
-                             (complement list?))            ; multi-arity
+     (split-with (every-pred (complement vector?) ; parameters
+                             (complement list?))  ; multi-arity
                  fn-form)))
 
 
@@ -248,7 +248,7 @@
            handler-fn (last form)]
        (if-not (and (seq? handler-fn)
                     (#{'fn 'fn*} (first handler-fn)))
-         form                           ; anon-fn is not defined inline
+         form                                     ; anon-fn is not defined inline
          (let [[_ handler-fn-tail] (split-fn handler-fn)
                fn-name          (unique-playback-sym
                                  *env*
