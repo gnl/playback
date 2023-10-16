@@ -3,7 +3,7 @@
    [clojure.string :as string]))
 
 
-(defn prepend-indent
+(defn- prepend-indent
   [indent-level]
   ;; Alternative symbols: #_"⤴ｏ｜⬆ ～￣＿"
   (-> (repeat indent-level "⬆")

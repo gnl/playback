@@ -12,9 +12,8 @@
    [clojure.spec.alpha :as s]
    [clojure.string :as string]
    [com.fulcrologic.guardrails.core :refer [>defn ? | =>]]
-   [playback.utils :refer [#?@(:clj [resolve-sym get-qualified-sym get-ns-name
-                                     cljs-env? invert-optype->ops unique-playback-sym])
-                           log-data format-portal-label]]
+   [playback.utils :refer #?(:clj  :all
+                             :cljs [log-data format-portal-label])]
    #?@(:clj  [[debux.core :as debux :refer [dbg dbgn]]
               [portal.api :as portal]]
        :cljs [[debux.cs.core :as debux :refer-macros [dbg dbgn]]
