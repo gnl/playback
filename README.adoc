@@ -68,7 +68,7 @@ TIP: If you want to tweak the Portal configuration you can use your own `preload
 . `+#>+` traces the evaluated output of any code and sends the data to Portal; +
 `+#>>+` traces input or intermediate data as well, depending on the form (`let` bindings, threading macro steps, `defn`/`fn` arguments, `loop`/`recur` bindings, etc.)
 
-. Traced functions – `+#>(defn+`, `+#>(defmethod+`, `+#>(>defn+` – cache their most recent input and are automatically called with it (= replayed) whenever they're reloaded by your environment's send-to-REPL or recompile-on-save functionality.
+. Traced named functions – `+#>(defn+`, `+#>(>defn+`, `+#>(defmethod+` – as well as registered anonymous functions like re-frame handlers and subscriptions – `+#>(reg-event-fx+`, `+#>(reg-sub+` – cache their most recent input and are automatically called with it (= replayed) whenever they're reloaded by your environment's send-to-REPL or recompile-on-save functionality.
 +
 This way you can have a function receive some real application data, make changes to the code, eval/reload it and instantly see the updated dataflow, output and possible spec failures as it's auto-replayed and retraced with the same input.
 +
@@ -104,20 +104,6 @@ You can then wrap any traced expression with `#>> (user/table ...)`. See https:/
 
 TIP: Playback works great with Fulcrologic's indispensable https://github.com/fulcrologic/guardrails[Guardrails] (or its now discontinued predecessor https://github.com/gnl/ghostwheel[Ghostwheel]). If you set `{:tap>? true}` in https://github.com/fulcrologic/guardrails#configuration[its configuration], you can see the results of failed spec checks in Portal right inside the traced dataflow (though you'll probably still want to take a look at the REPL or console for the human-readable error message). A similar workflow should be possible with https://github.com/metosin/malli/blob/master/docs/function-schemas.md[Malli function schemas] and instrumentation as well.
 
-
-[TIP]
-====
-You can trace and replay re-frame handlers and subscriptions just like regular functions, without having to extract the anonymous `fn` into a top-level `defn`:
-
-[source,clojure]
-----
-#>>(reg-event-fx
-    ::boot
-    (fn [_ _]
-      {:db default-db}))
-----
-====
-
 [TIP]
 ====
 If you want to trace/replay your own compatible macros with Playback, you can extend its existing optypes like this:
@@ -132,7 +118,7 @@ If you want to trace/replay your own compatible macros with Playback, you can ex
                           ::playback/fn-reg ['foo.bar/reg-sub 'foo.bar/reg-fx]})
 ----
 
-See `optype\->ops` in `playback.core` for a list.
+See `+optype->ops+` in `playback.core` for a list.
 ====
 
 ### Instant re-render on eval
