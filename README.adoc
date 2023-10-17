@@ -84,7 +84,7 @@ TIP: Playback works great with Fulcrologic's indispensable https://github.com/fu
 
 [TIP]
 ====
-If you want to use a particular Portal viewer, you can define some helper functions in your `user.clj(s)` like this:
+To select a particular Portal viewer for a traced expression, you can define some helper functions in your `user.clj(s)` like this:
 
 .dev/user.clj(s)
 [source,clojure]
@@ -100,12 +100,12 @@ If you want to use a particular Portal viewer, you can define some helper functi
   (with-meta expr {:portal.viewer/default :portal.viewer/table}))
 ----
 
-You can then wrap any traced expression with `#>> (user/table ...)`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
+You can then wrap the expression with `#>> (user/table ...)`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
 ====
 
 [TIP]
 ====
-If you want to trace/replay your own compatible macros with Playback, you can extend its existing optypes like this:
+If you want to trace/replay your own (compatible) macros with Playback, you can extend its existing optypes like this:
 
 .dev/user.clj
 [source,clojure]
