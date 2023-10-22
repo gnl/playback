@@ -41,7 +41,7 @@ image:doc/images/playback-screenshot.png?raw=true[link="https://vimeo.com/853054
 
 . Add image:https://img.shields.io/clojars/v/com.github.gnl/playback.svg[Clojars Project,link=https://clojars.org/com.github.gnl/playback] to your dev (and only dev) dependencies.
 
-. Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up.
+. Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up:
 
 - Clojure and Babashka:
 +
@@ -84,7 +84,7 @@ TIP: Playback works great with Fulcrologic's indispensable https://github.com/fu
 
 [TIP]
 ====
-To select a particular Portal viewer for a traced expression, you can define some helper functions in your `user.clj(s)` like this:
+To select a particular Portal viewer for a traced expression, you can define some helper functions like this:
 
 .dev/user.clj(s)
 [source,clojure]
@@ -100,7 +100,7 @@ To select a particular Portal viewer for a traced expression, you can define som
   (with-meta expr {:portal.viewer/default :portal.viewer/table}))
 ----
 
-You can then wrap the expression with `#>> (user/table ...)`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
+You can then wrap the expression with `#>> (user/table (...))`. See https://cljdoc.org/d/djblue/portal/0.48.0/doc/ui-concepts/viewers[the Portal documentation] for more details.
 ====
 
 [TIP]

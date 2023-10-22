@@ -28,7 +28,7 @@
 
 
 (def ^:no-doc !fn-arg-cache (atom {}))
-(def ^:no-doc ^:dynamic !*portal-value* nil)
+(def ^:no-doc ^:dynamic *!portal-value* nil)
 
 (def ^:private ^:dynamic *env*)
 (def ^:private ^:dynamic *form*)
@@ -302,7 +302,7 @@
 
 (defn ^:no-doc trace-o [form] `(trace> ~form))
 (defn ^:no-doc trace-io [form] `(trace>> ~form))
-(defn ^:no-doc get-portal-data [_] `@playback.core/!*portal-value*)
+(defn ^:no-doc get-portal-data [_] `@playback.core/*!portal-value*)
 
 
 ;;; Public ;;;
@@ -335,11 +335,11 @@
    (open-portal! nil))
   ([portal-config]
    [(? (s/map-of keyword? any?)) => any?]
-   (if (some? !*portal-value*)
+   (if (some? *!portal-value*)
      (println "Looks like Portal is already open.")
      (let [portal-instance (portal/open (merge {} portal-config))]
-       #?(:clj  (alter-var-root #'!*portal-value* (constantly portal-instance))
-          :cljs (set! !*portal-value* portal-instance))
+       #?(:clj  (alter-var-root #'*!portal-value* (constantly portal-instance))
+          :cljs (set! *!portal-value* portal-instance))
        portal-instance))))
 
 
