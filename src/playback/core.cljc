@@ -57,13 +57,15 @@
                       'cljs.core/loop}})
 
      (def ^:private op->optype (invert-optype->ops optype->ops))
+     (def ^:private default-type-hierarchy (reduce (fn [hierarchy [op optype]]
+                                                     (derive hierarchy op optype))
+                                                   (make-hierarchy)
+                                                   op->optype))
 
      (defonce ^:private !dispatch-type-hierarchy (atom nil))
      ;; If we just set the hierarchy in the def above, it won't get reset on
      ;; reload, so we initialise it like this
-     (reset! !dispatch-type-hierarchy (make-hierarchy))
-     (doseq [[op optype] op->optype]
-       (swap! !dispatch-type-hierarchy derive op optype))))
+     (reset! !dispatch-type-hierarchy default-type-hierarchy)))
 
 
 ;;; Specs ;;;
@@ -310,10 +312,14 @@
 
 #?(:clj
    (>defn extend-optypes!
+     "Idempotent function – resets the optype trace dispatch hierarchy and
+     extends it with the supplied ops. Pass `nil` to just reset."
      [optype->ops]
-     [(s/map-of ::optype (s/coll-of qualified-symbol?)) => any?]
-     (doseq [[op optype] (invert-optype->ops optype->ops)]
-       (swap! !dispatch-type-hierarchy derive op optype))))
+     [(? (s/map-of ::optype (s/coll-of qualified-symbol?))) => any?]
+     (reset! !dispatch-type-hierarchy default-type-hierarchy)
+     (when optype->ops
+       (doseq [[op optype] (invert-optype->ops optype->ops)]
+         (swap! !dispatch-type-hierarchy derive op optype)))))
 
 
 (defn portal-tap
