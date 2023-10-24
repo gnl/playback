@@ -1,3 +1,9 @@
+## 0.5.1
+
+### Improved
+
+- `extend-default-optypes!` is now an idempotent function and allows a reset-to-default of the trace dispatch optype hierarchy.
+- Code cleanup
 
 ## 0.5.0
 
