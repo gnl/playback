@@ -31,7 +31,7 @@
 (def ^:no-doc ^:dynamic *!portal-value* nil)
 
 (def ^:private ^:dynamic *env*)
-(def ^:private ^:dynamic *form*)
+
 
 #?(:clj
    (do
@@ -309,7 +309,7 @@
 
 
 #?(:clj
-   (>defn extend-optypes
+   (>defn extend-optypes!
      [optype->ops]
      [(s/map-of ::optype (s/coll-of qualified-symbol?)) => any?]
      (doseq [[op optype] (invert-optype->ops optype->ops)]

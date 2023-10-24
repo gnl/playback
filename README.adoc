@@ -113,8 +113,8 @@ If you want to trace/replay your own (compatible) macros with Playback, you can 
 (ns user
   (:require [playback.core :as playback]))
 
-(playback/extend-optypes {::playback/defn   ['foo.bar/defn 'foo.bar/defn-]
-                          ::playback/fn-reg ['foo.bar/reg-sub 'foo.bar/reg-fx]})
+(playback/extend-optypes! {::playback/defn   ['foo.bar/defn 'foo.bar/defn-]
+                           ::playback/fn-reg ['foo.bar/reg-sub 'foo.bar/reg-fx]})
 ----
 
 See `+optype->ops+` in `playback.core` for a list.
