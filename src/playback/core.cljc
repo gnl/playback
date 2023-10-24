@@ -311,9 +311,9 @@
 
 
 #?(:clj
-   (>defn extend-optypes!
-     "Idempotent function – resets the optype trace dispatch hierarchy and
-     extends it with the supplied ops. Pass `nil` to just reset."
+   (>defn extend-default-optypes!
+     "Idempotent function – resets the optype trace dispatch hierarchy to
+     default and extends it with the supplied ops. Pass `nil` to just reset."
      [optype->ops]
      [(? (s/map-of ::optype (s/coll-of qualified-symbol?))) => any?]
      (reset! !dispatch-type-hierarchy default-type-hierarchy)
