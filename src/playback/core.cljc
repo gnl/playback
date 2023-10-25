@@ -341,6 +341,10 @@
    (open-portal! nil))
   ([portal-config]
    [(? (s/map-of keyword? any?)) => any?]
+   (when (some? *!portal-value*)
+     (println "Closing previous portal session...")
+     #?(:clj  (portal/close *!portal-value*)
+        :cljs (portal/close)))
    (let [portal-instance (portal/open (merge {} portal-config))]
      #?(:clj  (alter-var-root #'*!portal-value* (constantly portal-instance))
         :cljs (set! *!portal-value* portal-instance))
