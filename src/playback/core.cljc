@@ -341,12 +341,10 @@
    (open-portal! nil))
   ([portal-config]
    [(? (s/map-of keyword? any?)) => any?]
-   (if (some? *!portal-value*)
-     (println "Looks like Portal is already open.")
-     (let [portal-instance (portal/open (merge {} portal-config))]
-       #?(:clj  (alter-var-root #'*!portal-value* (constantly portal-instance))
-          :cljs (set! *!portal-value* portal-instance))
-       portal-instance))))
+   (let [portal-instance (portal/open (merge {} portal-config))]
+     #?(:clj  (alter-var-root #'*!portal-value* (constantly portal-instance))
+        :cljs (set! *!portal-value* portal-instance))
+     portal-instance)))
 
 
 ;;; DEBUG ;;;
