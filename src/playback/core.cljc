@@ -345,10 +345,10 @@
      (println "Closing previous portal session...")
      #?(:clj  (portal/close *!portal-value*)
         :cljs (portal/close)))
-   (let [portal-instance (portal/open (merge {} portal-config))]
-     #?(:clj  (alter-var-root #'*!portal-value* (constantly portal-instance))
-        :cljs (set! *!portal-value* portal-instance))
-     portal-instance)))
+   (let [!portal-instance (portal/open (merge {} portal-config))]
+     #?(:clj  (alter-var-root #'*!portal-value* (constantly !portal-instance))
+        :cljs (set! *!portal-value* !portal-instance))
+     !portal-instance)))
 
 
 ;;; DEBUG ;;;
