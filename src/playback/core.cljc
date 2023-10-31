@@ -135,16 +135,16 @@
    (defn- generate-capture-defn
      [fn-form trace-level optype fn-arg-cache-key]
      (let [[fn-head fn-tail] (split-fn fn-form)
-           [op tracing-fn-name & fn-head-rest] fn-head
+           [op traced-fn-name & fn-head-rest] fn-head
            fn-head-rest    (stripped-fn-head-rest fn-head-rest optype)
            renamed-fn-name (unique-playback-sym
                             *env*
-                            (symbol (str tracing-fn-name "__playback_core__")))
+                            (symbol (str traced-fn-name "__playback_core__")))
            renamed-orig-fn `(~(traced-op op optype)
                              ~(with-meta renamed-fn-name {::playback? true})
                              ~@fn-head-rest
                              ~@fn-tail)
-           tracing-fn      `(~(wrapping-op op) ~@(rest fn-head)
+           traced-fn       `(~(wrapping-op op) ~@(rest fn-head)
                              [& args#]
                              (swap! !fn-arg-cache assoc '~fn-arg-cache-key args#)
                              (-> (str "▷ ︎"
@@ -172,12 +172,12 @@
        `(do
           ;; needed for recursive and multi-arity functions, because the tracing
           ;; fn now has the original fn name they're trying to call
-          (declare ~tracing-fn-name)
+          (declare ~traced-fn-name)
           ~renamed-orig-fn
-          ~tracing-fn
-          ~(when-not (string/ends-with? (str tracing-fn-name) "!")
+          ~traced-fn
+          ~(when-not (string/ends-with? (str traced-fn-name) "!")
              `(when-let [args# (get @!fn-arg-cache '~fn-arg-cache-key)]
-                (apply ~tracing-fn-name args#)))))))
+                (apply ~traced-fn-name args#)))))))
 
 
 #?(:clj
@@ -316,10 +316,13 @@
      default and extends it with the supplied ops. Pass `nil` to just reset."
      [optype->ops]
      [(? (s/map-of ::optype (s/coll-of qualified-symbol?))) => any?]
-     (reset! !dispatch-type-hierarchy default-type-hierarchy)
-     (when optype->ops
-       (doseq [[op optype] (invert-optype->ops optype->ops)]
-         (swap! !dispatch-type-hierarchy derive op optype)))))
+     (let [new-type-hierarchy (if-not optype->ops
+                                default-type-hierarchy
+                                (reduce (fn [hierarchy [op optype]]
+                                          (derive hierarchy op optype))
+                                        default-type-hierarchy
+                                        (invert-optype->ops optype->ops)))]
+       (reset! !dispatch-type-hierarchy new-type-hierarchy))))
 
 
 (defn portal-tap
