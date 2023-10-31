@@ -10,6 +10,7 @@ pom.xml.asc
 /.nrepl-port
 /.prepl-port
 /.cpcache/
+/.clj-kondo/
 .idea/
 *.iml
 *.swp
