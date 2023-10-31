@@ -1,8 +1,12 @@
 ## 0.5.2
 
+### Improved
+
+- Upgraded to newest Portal v0.49.0
+
 ### Fixed
 
-- repeated calls to `playback.core/open-portal!` close Playback's previous Portal session and open a new one
+- Repeated calls to `playback.core/open-portal!` close Playback's previous Portal session and open a new one
 
 
 ## 0.5.1
@@ -11,6 +15,7 @@
 
 - `extend-default-optypes!` is now an idempotent function and allows a reset-to-default of the trace dispatch optype hierarchy.
 - Code cleanup
+
 
 ## 0.5.0
 
