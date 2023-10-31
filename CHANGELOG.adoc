@@ -1,3 +1,10 @@
+## 0.5.2
+
+### Fixed
+
+- repeated calls to `playback.core/open-portal!` close Playback's previous Portal session and open a new one
+
+
 ## 0.5.1
 
 ### Improved

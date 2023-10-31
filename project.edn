@@ -1,5 +1,5 @@
 {:lib         com.github.gnl/playback
- :version     "0.5.2-SNAPSHOT"
+ :version     "0.5.2"
  :scm         {:url "https://github.com/gnl/playback"}
  :pom-data    [[:description "Easier-than-print dataflow tracing to tap> and Portal with automatic last-input function replay on eval, instant re-render and effortless extraction of traced data"]
                [:url "https://github.com/gnl/playback"]
