@@ -1,3 +1,8 @@
+## 0.5.3
+
+- Upgraded to newest Portal v0.49.1
+
+
 ## 0.5.2
 
 ### Improved
