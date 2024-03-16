@@ -41,6 +41,9 @@ image:doc/images/playback-screenshot.png?raw=true[link="https://vimeo.com/853054
 
 . Add image:https://img.shields.io/clojars/v/com.github.gnl/playback.svg[Clojars Project,link=https://clojars.org/com.github.gnl/playback] to your dev (and only dev) dependencies.
 
++
+WARNING: Playback requires Clojure(-Script) version 1.10+.
+
 . Load the `playback.preload` namespace on application launch and the https://github.com/djblue/portal[Portal] window should pop right up:
 
 - Clojure and Babashka:
@@ -64,6 +67,9 @@ See the https://shadow-cljs.github.io/docs/UsersGuide.html#_preloads[Shadow] or 
 
 +
 TIP: If you want to tweak the Portal configuration you can use your own `preload` namespace by copying `playback.preload` to your project's source path, renaming it accordingly, and passing the config map to `playback.core/open-portal!`.
+
++
+WARNING: If the Portal pop-up doesn't appear, make sure your browser isn't blocking it.
 
 . `+#>+` traces the evaluated output of any code and sends the data to Portal; +
 `+#>>+` traces input or intermediate data as well, depending on the form (`let` bindings, threading macro steps, `defn`/`fn` arguments, `loop`/`recur` bindings, etc.)
